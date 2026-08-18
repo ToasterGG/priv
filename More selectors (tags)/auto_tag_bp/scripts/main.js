@@ -1,6 +1,6 @@
 import { world, system } from "@minecraft/server";
 
-// ─── Constants ───────────────────────────────────────────────────────────────
+// ─── Constants ──────────────────────────────────────────────────────────
 
 const MOVEMENT_TAGS = ["Sneaking", "Sprinting", "Walking", "Idle"];
 
@@ -37,7 +37,7 @@ system.runInterval(() => {
   }
 }, 1);
 
-// ─── Movement Tags ────────────────────────────────────────────────────────────
+// ─── Movement Tags ────────────────────────────────────────────────────────
 // Priority order: Sneaking > Sprinting > Walking > Idle
 // Walking = has velocity but isn't sprinting or sneaking.
 
@@ -63,7 +63,7 @@ function updateMovementTags(player) {
   }
 }
 
-// ─── Health Tags ──────────────────────────────────────────────────────────────
+// ─── Health Tags ─────────────────────────────────────────────────────────
 // Reads the player's current health component and syncs one health tag.
 // Tags: Health1–Health20 for exact HP, Health21+ for anything above.
 
@@ -85,3 +85,54 @@ function updateHealthTags(player) {
     if (tag !== activeTag && has)  player.removeTag(tag);
   }
 }
+
+// ─── Action Prevention Tags (beforeEvents) ─────────────────────────────────
+// These tags silently prevent player actions when manually added.
+
+// CantBreak: Prevents breaking blocks
+world.beforeEvents.playerBreakBlock.subscribe((event) => {
+  if (event.player.hasTag("CantBreak")) {
+    event.cancel = true;
+  }
+});
+
+// CantPlace: Prevents placing blocks
+world.beforeEvents.playerPlaceBlock.subscribe((event) => {
+  if (event.player.hasTag("CantPlace")) {
+    event.cancel = true;
+  }
+});
+
+// CantInteract: Prevents interacting with blocks/entities (chests, doors, levers, etc.)
+world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
+  if (event.player.hasTag("CantInteract")) {
+    event.cancel = true;
+  }
+});
+
+// CantDamage: Prevents damaging entities (players and mobs)
+world.beforeEvents.entityHurt.subscribe((event) => {
+  if (event.damageSource.damagingEntity && event.damageSource.damagingEntity.typeId === "minecraft:player") {
+    if (event.damageSource.damagingEntity.hasTag("CantDamage")) {
+      event.cancel = true;
+    }
+  }
+});
+
+// NoFall: Prevents fall damage
+world.beforeEvents.entityHurt.subscribe((event) => {
+  if (event.damageSource.cause === "fall" && event.hurtEntity.typeId === "minecraft:player") {
+    if (event.hurtEntity.hasTag("NoFall")) {
+      event.cancel = true;
+    }
+  }
+});
+
+// NoDrown: Prevents drowning damage
+world.beforeEvents.entityHurt.subscribe((event) => {
+  if (event.damageSource.cause === "drowning" && event.hurtEntity.typeId === "minecraft:player") {
+    if (event.hurtEntity.hasTag("NoDrown")) {
+      event.cancel = true;
+    }
+  }
+});
