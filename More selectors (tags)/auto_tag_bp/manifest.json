@@ -1,0 +1,25 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Auto Tag Players",
+    "description": "Automatically tags players with movement, health, and death state selectors.",
+    "uuid": "f72a8064-262f-41e9-9a82-4e9ab732a65c",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 20, 10]
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "24a9543c-bbe3-429c-994e-61b907ce519f",
+      "version": [1, 0, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "1.4.0"
+    }
+  ]
+}
