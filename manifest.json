@@ -1,5 +1,0 @@
-# This repository root manifest was intentionally removed
-
-The active Bedrock behavior pack manifest is now located at meeting_mod/manifest.json.
-
-This file is a placeholder to avoid dangling manifests at repo root. You can safely delete it if you prefer the repository root to be clean.
