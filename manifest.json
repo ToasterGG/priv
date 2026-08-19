@@ -1,25 +1,5 @@
-{
-  "format_version": 2,
-  "header": {
-    "name": "Meeting Mod",
-    "description": "In-world meeting/vote system (countdown + chat voting)",
-    "uuid": "b9f1c2d3-4a5b-6c7d-8e9f-0123456789ab",
-    "version": [1,0,0],
-    "min_engine_version": [1,20,10]
-  },
-  "modules": [
-    {
-      "type": "scripting",
-      "language": "javascript",
-      "uuid": "c0ffee00-1111-2222-3333-444455556666",
-      "version": [1,0,0],
-      "entry": "meeting_mod/scripts/meeting.js"
-    }
-  ],
-  "dependencies": [
-    {
-      "module_name": "@minecraft/server",
-      "version": "1.4.0"
-    }
-  ]
-}
+# This repository root manifest was intentionally removed
+
+The active Bedrock behavior pack manifest is now located at meeting_mod/manifest.json.
+
+This file is a placeholder to avoid dangling manifests at repo root. You can safely delete it if you prefer the repository root to be clean.
