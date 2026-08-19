@@ -4,7 +4,7 @@
 //  - Run /function meeting_mod:meeting to start (this tags all players with `meetingStart` which the script detects),
 //    OR any player can type `!meeting` in chat to start it.
 // Notes:
-//  - Titles are set to disappear after 5 seconds using title times (10 100 10) => 0.5s in, 5s stay, 0.5s out (ticks)
+//  - Titles are set to disappear after 5 seconds using title times (10 100 10) => 0.5s fadeIn, 5s stay, 0.5s fadeOut
 //  - Actionbar shows "Voting starts in: Ns" during the countdown
 
 import { world, system } from "@minecraft/server";
