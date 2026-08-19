@@ -1,2 +1,2 @@
-# Tag help mcfunction
-say Usage: This is an example mcfunction file for the example mod
+# Tag help mcfunction (clean slate)
+# No commands present.
