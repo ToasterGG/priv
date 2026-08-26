@@ -9,7 +9,7 @@
   },
   "modules": [
     {
-      "type": "scripting",
+      "type": "script",
       "language": "javascript",
       "uuid": "c0ffee00-1111-2222-3333-444455556666",
       "version": [1,0,0],
