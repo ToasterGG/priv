@@ -18,7 +18,8 @@ let meetingState = {
   voteTimer: 0,
   votes: new Map(), // targetName -> count
   voted: new Set(), // voterName
-  chatSubscription: null
+  chatSubscription: null,
+  intervalId: null
 };
 
 // Helper to run commands (returns Promise)
@@ -50,6 +51,8 @@ async function startMeeting() {
   meetingState.voteTimer = 0;
   meetingState.votes = new Map();
   meetingState.voted = new Set();
+
+  console.log("Meeting started!");
 
   await ensureObjectives();
   await runCmd(`scoreboard players set __meeting_timer meetingtimer ${meetingState.timer}`).catch(() => {});
@@ -84,6 +87,7 @@ async function startMeeting() {
         overworld.runCommandAsync('title @a subtitle "Say a username in chat to vote them"').catch(() => {});
 
         meetingState.chatSubscription = world.events.beforeChat.subscribe(handleChatForVote);
+        console.log("Vote phase started!");
       }
     } else {
       meetingState.voteTimer -= 1;
@@ -113,8 +117,13 @@ async function startMeeting() {
           const victimName = winners[0];
           overworld.runCommandAsync(`kill "${victimName}"`).catch(() => {});
           overworld.runCommandAsync(`tellraw @a {"rawtext":[{"text":"${victimName} has been voted out (votes: ${maxVotes})"}]}`).catch(() => {});
+          console.log(`${victimName} voted out with ${maxVotes} votes`);
+        } else if (winners.length > 1) {
+          overworld.runCommandAsync('tellraw @a {"rawtext":[{"text":"Voting ended: tie — no action taken."}]}').catch(() => {});
+          console.log("Vote tied, no action taken");
         } else {
-          overworld.runCommandAsync('tellraw @a {"rawtext":[{"text":"Voting ended: no unique highest vote — no action taken."}]}').catch(() => {});
+          overworld.runCommandAsync('tellraw @a {"rawtext":[{"text":"Voting ended: no votes cast — no action taken."}]}').catch(() => {});
+          console.log("No votes cast");
         }
 
         // Cleanup objectives
@@ -130,11 +139,17 @@ async function startMeeting() {
         meetingState.votes.clear();
         meetingState.voted.clear();
 
-        system.clearRun(intervalId);
+        if (meetingState.intervalId) {
+          system.clearRun(meetingState.intervalId);
+          meetingState.intervalId = null;
+        }
         broadcastActionbar("");
+        console.log("Meeting ended");
       }
     }
   }, 20);
+
+  meetingState.intervalId = intervalId;
 }
 
 function handleChatForVote(chatEvent) {
@@ -143,6 +158,9 @@ function handleChatForVote(chatEvent) {
 
     const msg = (chatEvent.message || "").trim();
     const sender = chatEvent.sender;
+
+    if (!sender) return;
+
     const voterName = (sender.nameTag || sender.name).toString();
 
     // consume chat message
@@ -157,6 +175,7 @@ function handleChatForVote(chatEvent) {
     const players = world.getPlayers();
     let found = null;
     for (const p of players) {
+      if (!p) continue;
       const pname = (p.nameTag || p.name).toString();
       if (pname.toLowerCase() === lower) {
         found = p;
@@ -178,6 +197,7 @@ function handleChatForVote(chatEvent) {
 
     meetingState.voted.add(voterName);
     sender.runCommandAsync(`tellraw @s {"rawtext":[{"text":"Vote recorded for ${targetName}."}]}`).catch(() => {});
+    console.log(`${voterName} voted for ${targetName}`);
   } catch (e) {
     console.error("Error handling vote chat event", e);
   }
@@ -191,6 +211,7 @@ world.events.beforeChat.subscribe((ev) => {
     if (txt === "!meeting") {
       ev.cancel = true;
       if (!meetingState.active) {
+        console.log("Meeting requested via chat");
         startMeeting();
       } else {
         sender.runCommandAsync(`tellraw @s {"rawtext":[{"text":"A meeting is already in progress."}]}`).catch(() => {});
@@ -201,21 +222,30 @@ world.events.beforeChat.subscribe((ev) => {
   }
 });
 
-// Poll for meetingStart tag
+// Poll for meetingStart tag - runs every tick for immediate detection
 system.runInterval(() => {
   try {
     if (meetingState.active) return;
+
     const players = world.getPlayers();
     for (const p of players) {
+      if (!p) continue;
       try {
-        if (p.hasTag && p.hasTag('meetingStart')) {
-          try { p.removeTag('meetingStart'); } catch {}
+        if (p.hasTag('meetingStart')) {
+          try { 
+            p.removeTag('meetingStart'); 
+          } catch {}
+          console.log("Meeting tag detected, starting meeting");
           startMeeting();
-          break;
+          return; // Exit early
         }
-      } catch {}
+      } catch (e) {
+        console.error("Error checking player tag:", e);
+      }
     }
-  } catch (e) { console.error(e); }
-}, 10 * 20);
+  } catch (e) { 
+    console.error("Error in tag polling interval:", e); 
+  }
+}, 1); // Run every tick for immediate detection
 
-console.log('Meeting manager loaded');
+console.log('Meeting manager loaded and ready!');
